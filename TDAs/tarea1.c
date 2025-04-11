@@ -71,7 +71,7 @@ Usuario *crear_usuario_aleatorio() {
     nuevo->minuto = rand() % 60;
     nuevo->prioridad = 3;
 
-    return nuevo; // Abc
+    return nuevo; // Abcdef
 }
 
 int eliminar_usuario_por_id(List *lista, int id) {
