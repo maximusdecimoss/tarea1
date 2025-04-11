@@ -6,6 +6,9 @@
 #include <time.h>
 #include <string.h>
 
+/*
+Comienzo declarando unas estructura en la cual posteriormetne guardare los datos de cada ususario que use la app.
+*/
 typedef struct {
     char nombre[50];
     int id;
