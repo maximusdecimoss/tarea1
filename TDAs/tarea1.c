@@ -6,6 +6,12 @@
 #include <time.h>
 #include <string.h>
 
+/*Se creara una estructura de datos para almacenar la información de los usuarios.
+Esta estructura contendrá el nombre, ID, prioridad, problema y la hora de ingreso del usuario. 
+Se utilizará una lista enlazada para almacenar los usuarios registrados y se asignarán prioridades a los tickets según su gravedad. 
+La prioridad se asignará de la siguiente manera: 1 (alta), 2 (media) y 3 (baja). 
+Los tickets se ordenarán por prioridad y hora de ingreso, y se atenderán en ese orden.
+*/
 typedef struct {
     char nombre[50];
     int id;
@@ -15,6 +21,9 @@ typedef struct {
     int minuto;
 } Usuario;
 
+/*
+Procederemos a declarar las funciones que se utilizarán en el programa. Para de esta forma llevar un orden y claridad en el código.
+*/
 void inicializarGeneradorAleatorio();
 Usuario *crear_usuario_aleatorio();
 void registrar_Usuario_aleatorio(List *Usuarios, List *baja);
@@ -35,13 +44,18 @@ int leerEntero(const char *mensaje);
 void leerCadena(const char *mensaje, char *buffer, size_t size);
 void imprimir_ticket(Usuario *usuario, const char *prioridad);
 char leerOpcion(const char *mensaje);
-
+/*
+La Funcion inicializarGeneradorAleatorio inicializa el generador de números aleatorios usando la función srand con el tiempo actual como semilla. Esto asegura que cada vez que se ejecute el programa, se generen números aleatorios diferentes.
+*/
 void inicializarGeneradorAleatorio() {
     srand(time(NULL));
 }
 
+/*
+La crear_usuario_aleatorio crea un nuevo usuario con un nombre, ID, problema y hora aleatorios. Utiliza arreglos de nombres y problemas predefinidos para seleccionar aleatoriamente un nombre y un problema. La hora y el minuto también se generan aleatoriamente.
+*/
 Usuario *crear_usuario_aleatorio() {
-    Usuario *nuevo = malloc(sizeof(Usuario));
+    Usuario *nuevo = malloc(sizeof(Usuario));// Aqui se asigna memoria para un nuevo usuario.
     if (nuevo == NULL) return NULL;
 
     const char *nombres[] = {"Juan", "Maria", "Pedro", "Ana", "Luis", "Carlos", "Sofia"};
@@ -56,7 +70,7 @@ Usuario *crear_usuario_aleatorio() {
         "El programa tarda mucho en cargar, incluso con buena conexión",
         "La interfaz de usuario no responde al hacer clic en botones",
         "Recibo un mensaje de error al intentar guardar mi trabajo"
-    };
+    }; //declaracion de textos bases que serviran para el testeo automatico de la app.
 
     int nombreIndex = rand() % (sizeof(nombres) / sizeof(nombres[0]));
     int problemaIndex = rand() % (sizeof(problemas) / sizeof(problemas[0]));
