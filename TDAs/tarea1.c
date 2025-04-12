@@ -6,7 +6,7 @@
 #include <time.h>
 #include <string.h>
 
-<<<<<<< HEAD
+
 /*Se creara una estructura de datos para almacenar la información de los usuarios.
 Esta estructura contendrá el nombre, ID, prioridad, problema y la hora de ingreso del usuario. 
 Se utilizará una lista enlazada para almacenar los usuarios registrados y se asignarán prioridades a los tickets según su gravedad. 
@@ -15,8 +15,8 @@ Los tickets se ordenarán por prioridad y hora de ingreso, y se atenderán en es
 =======
 /*
 Comienzo declarando unas estructura en la cual posteriormetne guardare los datos de cada ususario que use la app.
->>>>>>> ec111ea87ba484b6ecfda57c7f2cac50eeeb11f5
 */
+
 typedef struct {
     char nombre[50];
     int id;
@@ -57,13 +57,13 @@ void inicializarGeneradorAleatorio() {
 }
 
 /*
-La crear_usuario_aleatorio crea un nuevo usuario con un nombre, ID, problema y hora aleatorios. Utiliza arreglos de nombres y problemas predefinidos para seleccionar aleatoriamente un nombre y un problema. La hora y el minuto también se generan aleatoriamente.
+La funcion crear_usuario_aleatorio crea un nuevo usuario con un nombre, ID, problema y hora aleatorios. Utiliza arreglos de nombres y problemas predefinidos para seleccionar aleatoriamente un nombre y un problema. La hora y el minuto también se generan aleatoriamente.
 */
 Usuario *crear_usuario_aleatorio() {
     Usuario *nuevo = malloc(sizeof(Usuario));// Aqui se asigna memoria para un nuevo usuario.
     if (nuevo == NULL) return NULL;
 
-    const char *nombres[] = {"Juan", "Maria", "Pedro", "Ana", "Luis", "Carlos", "Sofia"};
+    const char *nombres[] = {"Juan", "Maria", "Pedro", "Ana", "Luis", "Carlos", "Sofia"}; //declaracion de nombres aleatorios para el testeo automatico de la app.
     const char *problemas[] = {
         "El sistema se congela al intentar iniciar sesión",
         "No puedo acceder a mis archivos después de la actualización",
@@ -77,42 +77,58 @@ Usuario *crear_usuario_aleatorio() {
         "Recibo un mensaje de error al intentar guardar mi trabajo"
     }; //declaracion de textos bases que serviran para el testeo automatico de la app.
 
-    int nombreIndex = rand() % (sizeof(nombres) / sizeof(nombres[0]));
+    //Divido el tamaño total del arreglo entre el tamaño de un solo elemento, lo que me dara
+    //el total de elementos que hay en el arreglo.
+    //Luego uso el operador modulo para obtener un numero aleatorio entre 0 y el total de elementos -1.
+    //Esto me permite seleccionar un nombre aleatorio de la lista de nombres.
+    int nombreIndex = rand() % (sizeof(nombres) / sizeof(nombres[0]));    
     int problemaIndex = rand() % (sizeof(problemas) / sizeof(problemas[0]));
 
-    snprintf(nuevo->nombre, sizeof(nuevo->nombre), "%s", nombres[nombreIndex]);
+    snprintf(nuevo->nombre, sizeof(nuevo->nombre), "%s", nombres[nombreIndex]);//se usa la funcion snprintf para controlar cuántos caracteres se copian como máximo, lo que evita desbordamientos de buffer.
     nuevo->id = rand() % 1000;
     snprintf(nuevo->problema, sizeof(nuevo->problema), "%s", problemas[problemaIndex]);
     nuevo->hora = rand() % 24;
     nuevo->minuto = rand() % 60;
     nuevo->prioridad = 3;
 
-    return nuevo; // Abcdef
+    return nuevo; // retorno el nuevo usuario creado.
 }
 
+/* La siguiente funcion se encarga de eliminar un usuario de la lista de usuarios.
+Recibe como argumento la lista de usuarios y el ID del usuario a eliminar. 
+Si encuentra el usuario, lo elimina de la lista y retorna 1. Si no lo encuentra, retorna 0.
+*/
 int eliminar_usuario_por_id(List *lista, int id) {
     if (lista == NULL) return 0;
 
-    Usuario *actual = list_first(lista);
+    Usuario *actual = list_first(lista);//Obtengo el primer elemento de la lista.
     while (actual != NULL) {
         if (actual->id == id) {
-            list_popCurrent(lista);
+            list_popCurrent(lista);//si el id coincide, elimino el usuario actual de la lista.
             return 1;
         }
-        actual = list_next(lista);
+        actual = list_next(lista);//sino avanzo al siguiente elemento de la lista.
     }
     return 0;
 }
 
+
+/*
+La siguiente funcion se encarga de eliminar un usuario de todas las listas (alta, media y baja)
+Recibe como argumento las listas y el ID del usuario a eliminar.
+*/
 void eliminar_de_todas_las_listas(List *alta, List *media, List *baja, int id) {
     eliminar_usuario_por_id(alta, id);
     eliminar_usuario_por_id(media, id);
     eliminar_usuario_por_id(baja, id);
 }
 
+/*
+La siguiente funcion se encarga de comparar las horas de llegada de los ususarios para porder ordenar los mismos pro quien tiene un hora de llegada menor en comparacion al otro
+*/
 int lower_than(void *data1, void *data2) {
-    Usuario *u1 = (Usuario *)data1;
-    Usuario *u2 = (Usuario *)data2;
+    Usuario *u1 = (Usuario *)data1;//Hago un cast para tratar los void* como punteros a Usuario, y 
+    Usuario *u2 = (Usuario *)data2;//poder acceder a sus campos (hora, minuto).
     if (u1->hora < u2->hora) return 1;
     if (u1->hora == u2->hora && u1->minuto < u2->minuto) return 1;
     return 0;
