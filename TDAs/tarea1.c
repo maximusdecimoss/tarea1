@@ -6,11 +6,16 @@
 #include <time.h>
 #include <string.h>
 
+<<<<<<< HEAD
 /*Se creara una estructura de datos para almacenar la información de los usuarios.
 Esta estructura contendrá el nombre, ID, prioridad, problema y la hora de ingreso del usuario. 
 Se utilizará una lista enlazada para almacenar los usuarios registrados y se asignarán prioridades a los tickets según su gravedad. 
 La prioridad se asignará de la siguiente manera: 1 (alta), 2 (media) y 3 (baja). 
 Los tickets se ordenarán por prioridad y hora de ingreso, y se atenderán en ese orden.
+=======
+/*
+Comienzo declarando unas estructura en la cual posteriormetne guardare los datos de cada ususario que use la app.
+>>>>>>> ec111ea87ba484b6ecfda57c7f2cac50eeeb11f5
 */
 typedef struct {
     char nombre[50];
@@ -82,7 +87,7 @@ Usuario *crear_usuario_aleatorio() {
     nuevo->minuto = rand() % 60;
     nuevo->prioridad = 3;
 
-    return nuevo;
+    return nuevo; // Abcdef
 }
 
 int eliminar_usuario_por_id(List *lista, int id) {
