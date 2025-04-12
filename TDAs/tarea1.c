@@ -12,7 +12,6 @@ Esta estructura contendrá el nombre, ID, prioridad, problema y la hora de ingre
 Se utilizará una lista enlazada para almacenar los usuarios registrados y se asignarán prioridades a los tickets según su gravedad. 
 La prioridad se asignará de la siguiente manera: 1 (alta), 2 (media) y 3 (baja). 
 Los tickets se ordenarán por prioridad y hora de ingreso, y se atenderán en ese orden.
-=======
 /*
 Comienzo declarando unas estructura en la cual posteriormetne guardare los datos de cada ususario que use la app.
 */
@@ -134,9 +133,12 @@ int lower_than(void *data1, void *data2) {
     return 0;
 }
 
+/*
+La siguiente funcion se encarga de crear un nuevo usuario aleatorio, asegurarse de que su ID no esté repetido, y luego registrarlo en el sistema, agregándolo tanto a la lista general como a la lista de prioridad baja. Esto para los casos de testeo de la app.
+*/
 void registrar_Usuario_aleatorio(List *Usuarios, List *baja) {
     Usuario *UsuarioNuevo;
-    int idUnico;
+    int idUnico;// uso esta funcion como bandera para asegurarme de que el id sea unico.
     do {
         UsuarioNuevo = crear_usuario_aleatorio();
         if (UsuarioNuevo == NULL) {
@@ -152,11 +154,11 @@ void registrar_Usuario_aleatorio(List *Usuarios, List *baja) {
                 break;
             }
             actual = list_next(Usuarios);
-        }
+        }//este fragmento de codigo me verifica si el id que estoy generando es unico, si no lo es, libero la memoria y vuelvo a generar un nuevo usuario.
     } while (!idUnico);
 
-    list_pushBack(Usuarios, UsuarioNuevo);
-    list_sortedInsert(baja, UsuarioNuevo, lower_than);
+    list_pushBack(Usuarios, UsuarioNuevo);// luego de verificar que el id es unico, lo agrego a la lista de usuarios, sin que me importe mucho el orden.
+    list_sortedInsert(baja, UsuarioNuevo, lower_than);//Aqui lo agrego a la lista de baja prioridad, ordenandolo por hora de ingreso.
 
     printf("Usuario registrado aleatoriamente:\n");
     printf("ID: %d, Nombre: %s, Prioridad: %d, Hora de Ingreso: %02d:%02d\n", 
@@ -164,16 +166,20 @@ void registrar_Usuario_aleatorio(List *Usuarios, List *baja) {
     UsuarioNuevo->hora, UsuarioNuevo->minuto);
 }
 
+
+/*
+La siguiente funcion se encarga de asignar prioridades aleatorias a los usuarios registrados en el sistema.Recibe como argumento las listas de usuarios y las listas de prioridades (alta, media y baja).
+*/
 void asignar_prioridades_aleatorias(List *Usuarios, List *alta, List *media, List *baja) {
     if (list_first(Usuarios) == NULL) {
         printf("No hay usuarios registrados para asignar prioridades.\n");
-        return;
+        return;//verifico que la lista de usuarios no este vacia, si lo esta, salgo de la funcion.
     }
 
-    Usuario *actual = list_first(Usuarios);
+    Usuario *actual = list_first(Usuarios);//obtengo el primer elemento de la lista de usuarios.
     while (actual != NULL) {
         eliminar_de_todas_las_listas(alta, media, baja, actual->id);
-        actual->prioridad = (rand() % 3) + 1;
+        actual->prioridad = (rand() % 3) + 1;//asigno una prioridad aleatoria entre 1 y 3.
         
         if (actual->prioridad == 1) {
             list_sortedInsert(alta, actual, lower_than);
@@ -181,89 +187,120 @@ void asignar_prioridades_aleatorias(List *Usuarios, List *alta, List *media, Lis
             list_sortedInsert(media, actual, lower_than);
         } else {
             list_sortedInsert(baja, actual, lower_than);
-        }
+        }//aqui en estas tres condiciones ordeno el usuario en la lista correspondiente a su prioridad.
 
         printf("Asignada prioridad %d al usuario ID %d (%s)\n", 
-        actual->prioridad, actual->id, actual->nombre);
-        actual = list_next(Usuarios);
+        actual->prioridad, actual->id, actual->nombre);//aqui imprimo el id y el nombre del usuario al que le asigne la prioridad.
+        actual = list_next(Usuarios);//avanzamos al siguiente usuario en la lista.
     }
     printf("Prioridades aleatorias asignadas exitosamente.\n");
 }
 
+/*
+La siguiente funcion se encarga de leer un entero desde la entrada estándar.
+Recibe como argumento un mensaje que se mostrará al usuario. La función valida la entrada, asegurándose de que sea un número entero no negativo. Si la entrada es inválida, vuelve a pedir al usuario que ingrese un número.
+*/
 int leerEntero(const char *mensaje) {
-    char buffer[10];
-    int valor;
+    char buffer[10];//Habilito un espacio de 10 caracteres para leer el entero para evitar 
+    int valor;      //desbordamientos.
     printf("%s", mensaje);
     while (fgets(buffer, sizeof(buffer), stdin) && 
         (sscanf(buffer, "%d", &valor) != 1 || valor < 0)) {
         printf("Entrada inválida. %s", mensaje);
-    }
+    }//uso la funcion fgets para leer la entrada del usuario y evitar desbordamiento de memoria y sscanf para convertirla a un entero.
+    // Si la conversión falla o el número es negativo, se vuelve a pedir la entrada.
     return valor;
 }
-
+/*
+La siguiente funcion se encarga de leer una cadena de caracteres desde la entrada estándar.
+Recibe como argumento un mensaje que se mostrará al usuario, un buffer donde se almacenará la cadena leída y el tamaño máximo del buffer. La función elimina el salto de línea al final de la cadena.
+*/
 void leerCadena(const char *mensaje, char *buffer, size_t size) {
     printf("%s", mensaje);
     fgets(buffer, size, stdin);
-    buffer[strcspn(buffer, "\n")] = 0;
+    buffer[strcspn(buffer, "\n")] = 0;//Esa línea elimina el \n al final de la cadena leída con fgets(), reemplazándolo con el carácter nulo \0 para que no afecte en operaciones posteriores.
 }
 
+
+/*
+La siguiente funcion se implementara para garantizar que el usuario ingrese un nombre válido, la función esNombreValido verifica que la cadena no esté vacía y que contenga solo letras y espacios.
+Si la cadena es válida, devuelve 1; de lo contrario, devuelve 0.
+*/
 int esNombreValido(const char *nombre) {
-    if (strlen(nombre) == 0) return 0;
+    if (strlen(nombre) == 0) return 0;//verifico que la cadena no este vacia.
+    
     for (int i = 0; nombre[i]; i++) {
         if (!isalpha(nombre[i]) && nombre[i] != ' ') return 0;
-    }
+    }//recorro la cadena y verifico que cada caracter sea una letra o un espacio.
+
+    
     return 1;
 }
 
+/*
+La siguiente funcion se encarga de verificar que la hora y el minuto ingresados sean válidos.   
+Recibe como argumento la hora y el minuto a verificar. La función devuelve 1 si la hora y el minuto son válidos; de lo contrario, devuelve 0.
+*/
 int esHoraValida(int hora, int minuto) {
     return (hora >= 0 && hora <= 23 && minuto >= 0 && minuto <= 59);
 }
 
+/*
+La siguiente funcion se encarga de registrar un nuevo usuario en el sistema.
+Recibe como argumento la lista de usuarios y la lista de baja prioridad. La función solicita al usuario que ingrese su nombre, ID, problema y hora de ingreso. Luego, verifica que el ID no esté repetido y que la hora y el minuto sean válidos. Finalmente, agrega el nuevo usuario a la lista de usuarios y a la lista de baja prioridad.
+*/
 void registrar_Usuario(List *Usuarios, List *baja) {
     Usuario *UsuarioNuevo = malloc(sizeof(Usuario));
     if (UsuarioNuevo == NULL) {
         puts("Error al asignar memoria para el usuario.");
-        return;
+        return;//si no se puede asignar memoria, salgo de la funcion.
     }
 
     do {
         leerCadena("Ingrese su nombre (solo letras y espacios):\n", 
         UsuarioNuevo->nombre, sizeof(UsuarioNuevo->nombre));
-    } while (!esNombreValido(UsuarioNuevo->nombre));
+    } while (!esNombreValido(UsuarioNuevo->nombre));//verifico que el nombre sea valido.
 
     int id;
     do {
         id = leerEntero("Ingrese su ID (solo números):\n");
-        Usuario *actual = list_first(Usuarios);
+        Usuario *actual = list_first(Usuarios);//obtengo el primer elemento de la lista de usuarios.
+        // Verifico si el ID ya está registrado en la lista de usuarios.
         while (actual != NULL) {
             if (actual->id == id) {
                 printf("Error: El ID %d ya está registrado.\n", id);
                 id = -1;
                 break;
-            }
-            actual = list_next(Usuarios);
+            }//si el id ya esta registrado, le asigno -1 a la variable id para que vuelva a pedir un nuevo id.
+            actual = list_next(Usuarios);// avanzo al siguiente usuario en la lista.   
         }
-    } while (id == -1);
+    } while (id == -1);// si el id es invalido, vuelvo a pedir un nuevo id.
     UsuarioNuevo->id = id;
 
     leerCadena("Ingrese su problema (máximo 500 caracteres):\n", 
-        UsuarioNuevo->problema, sizeof(UsuarioNuevo->problema));
+        UsuarioNuevo->problema, sizeof(UsuarioNuevo->problema));// Guardo el problema que el usuario presente en el momento de registrarse y verifico que el mismo no exceda los 500 caracteres.
 
     do {
         UsuarioNuevo->hora = leerEntero("Ingrese la hora (0-23): ");
         UsuarioNuevo->minuto = leerEntero("Ingrese los minutos (0-59): ");
-    } while (!esHoraValida(UsuarioNuevo->hora, UsuarioNuevo->minuto));
+    } while (!esHoraValida(UsuarioNuevo->hora, UsuarioNuevo->minuto));// verifico que la hora y el minuto sean validos.
+    
 
     UsuarioNuevo->prioridad = 3;
     list_pushBack(Usuarios, UsuarioNuevo);
-    list_sortedInsert(baja, UsuarioNuevo, lower_than);
-    printf("Usuario registrado exitosamente.\n");
+    list_sortedInsert(baja, UsuarioNuevo, lower_than);// Asigno la prioridad baja por defecto y lo 
+    printf("Usuario registrado exitosamente.\n");//agrego a la lista de usuarios.
 }
+
+/*
+La siguiente funcion se encarga de imprimir la lista de usuarios registrados en el sistema.
+Recibe como argumento la lista de usuarios, la lista de alta prioridad, la lista de media prioridad y la lista de baja prioridad. La función imprime los usuarios ordenados por prioridad y hora de ingreso.
+*/
 
 void imprimir_lista(List *Usuarios, List *alta, List *media, List *baja) {
     if (list_first(Usuarios) == NULL) {
         printf("No hay usuarios registrados.\n");
-        return;
+        return;//verifico que la lista de usuarios no este vacia, si lo esta, salgo de la funcion.
     }
 
     printf("\nLista de usuarios (ordenada por prioridad y hora de ingreso):\n");
@@ -271,12 +308,12 @@ void imprimir_lista(List *Usuarios, List *alta, List *media, List *baja) {
     printf("ID\tNombre\t\tPrioridad\tHora\tProblema\n");
     printf("--------------------------------------------------\n");
 
-    Usuario *actual = list_first(alta);
+    Usuario *actual = list_first(alta);// obtengo el primer elemento de la lista de alta prioridad.
     while (actual != NULL) {
         printf("%d\t%-10s\t%d\t\t%02d:%02d\t%.30s...\n",
         actual->id, actual->nombre, actual->prioridad,
-        actual->hora, actual->minuto, actual->problema);
-        actual = list_next(alta);
+        actual->hora, actual->minuto, actual->problema);//imprimo los datos del primer usuario de la lista alta.
+        actual = list_next(alta);// avanzo al siguiente usuario en la lista.
     }
 
     actual = list_first(media);
@@ -285,7 +322,7 @@ void imprimir_lista(List *Usuarios, List *alta, List *media, List *baja) {
         actual->id, actual->nombre, actual->prioridad,
         actual->hora, actual->minuto, actual->problema);
         actual = list_next(media);
-    }
+    }//imprimo los datos del usuario para el primero de la lista media
 
     actual = list_first(baja);
     while (actual != NULL) {
@@ -293,7 +330,7 @@ void imprimir_lista(List *Usuarios, List *alta, List *media, List *baja) {
         actual->id, actual->nombre, actual->prioridad,
         actual->hora, actual->minuto, actual->problema);
         actual = list_next(baja);
-    }
+    }// imprimo los datos del usuario para el primero de la lista baja.
 
     actual = list_first(Usuarios);
     while (actual != NULL) {
@@ -301,12 +338,16 @@ void imprimir_lista(List *Usuarios, List *alta, List *media, List *baja) {
             printf("%d\t%-10s\t%d\t\t%02d:%02d\t%.30s...\n",
             actual->id, actual->nombre, actual->prioridad,
             actual->hora, actual->minuto, actual->problema);
-        }
+        }//imprimo los datos del usuario para el primero de la lista de usuarios, que no tiene prioridad asignada.
         actual = list_next(Usuarios);
     }
     printf("--------------------------------------------------\n");
 }
 
+/*
+La siguiente funcion se encarga de asignar una prioridad a un usuario registrado en el sistema.
+Recibe como argumento las listas de alta, media y baja prioridad, y el usuario al que se le asignará la prioridad. La función solicita al usuario que ingrese la prioridad deseada (alta, media o baja) y actualiza la lista de prioridades del usuario.    
+*/
 void asignar_prioridad(List *alta, List *media, List *baja, Usuario *UsuarioNuevo) {
     int prioridad;
     do {
@@ -316,21 +357,26 @@ void asignar_prioridad(List *alta, List *media, List *baja, Usuario *UsuarioNuev
         printf("1) Alta prioridad\n");
         printf("2) Prioridad media\n");
         printf("3) Baja prioridad\n");
-        prioridad = leerEntero("Ingrese el nivel de prioridad (1, 2, o 3): ");
+        prioridad = leerEntero("Ingrese el nivel de prioridad (1, 2, o 3): ");// le pido al usuario que ingrese la prioridad deseada, validando que sea un numero entre 1 y 3.
         
         if (prioridad >= 1 && prioridad <= 3) break;
         printf("Error: Opción no válida.\n");
-    } while (1);
+    } while (1);//si la prioridad no es valida, vuelvo a pedirla.
 
-    eliminar_de_todas_las_listas(alta, media, baja, UsuarioNuevo->id);
+    eliminar_de_todas_las_listas(alta, media, baja, UsuarioNuevo->id);//elimino al usuario de todas las listas para evitar duplicados.
     UsuarioNuevo->prioridad = prioridad;
 
-    if (prioridad == 1) list_sortedInsert(alta, UsuarioNuevo, lower_than);
-    else if (prioridad == 2) list_sortedInsert(media, UsuarioNuevo, lower_than);
-    else list_sortedInsert(baja, UsuarioNuevo, lower_than);
+    if (prioridad == 1) list_sortedInsert(alta, UsuarioNuevo, lower_than);// aqui lo agrego a la lista de alta prioridad, ordenandolo por hora de ingreso.
+    else if (prioridad == 2) list_sortedInsert(media, UsuarioNuevo, lower_than);// aqui lo agrego a la lista de media prioridad, ordenandolo por hora de ingreso.
+    else list_sortedInsert(baja, UsuarioNuevo, lower_than);// aqui lo agrego a la lista de baja prioridad, ordenandolo por hora de ingreso.
 
     printf("Prioridad asignada con éxito.\n");
 }
+
+/*
+La siguiente funcion se encarga de imprimir un ticket de usuario.
+Recibe como argumento el usuario y la prioridad asignada. La función imprime el ID, nombre, problema, prioridad y hora de ingreso del usuario en un formato legible.
+*/
 
 void imprimir_ticket(Usuario *usuario, const char *prioridad) {
     printf("\n============================\n");
@@ -344,8 +390,8 @@ void imprimir_ticket(Usuario *usuario, const char *prioridad) {
 }
 
 int buscar_ticket_por_id(int id, List *alta, List *media, List *baja, List *Usuarios) {
-    const char *prioridades[] = {"Alta", "Media", "Baja"};
-    List *listas[] = {alta, media, baja};
+    const char *prioridades[] = {"Alta", "Media", "Baja"};// aqui declaro un arreglo de cadenas que contiene los nombres de las prioridades.
+    List *listas[] = {alta, media, baja};// aqui declaro un arreglo de listas que contiene las listas de prioridades.
 
     for (int i = 0; i < 3; i++) {
         Usuario *actual = list_first(listas[i]);
@@ -355,7 +401,7 @@ int buscar_ticket_por_id(int id, List *alta, List *media, List *baja, List *Usua
                 return 1;
             }
             actual = list_next(listas[i]);
-        }
+        }// aqui recorro cada lista de prioridades y busco el id que me pasaron por parametro, si lo encuentro, imprimo el ticket y retorno 1.
     }
 
     Usuario *actual = list_first(Usuarios);
@@ -364,15 +410,20 @@ int buscar_ticket_por_id(int id, List *alta, List *media, List *baja, List *Usua
             printf("Usuario encontrado, pero sin prioridad asignada:\n");
             imprimir_ticket(actual, "Sin prioridad");
             return 1;
-        }
-        actual = list_next(Usuarios);
+        }// aqui recorro la lista de usuarios y busco el id que me pasaron por parametro, si lo encuentro, imprimo el ticket y retorno 1.
+        actual = list_next(Usuarios);// avanzo al siguiente usuario en la lista.
     }
     return 0;
 }
 
+/*
+La siguiente funcion se encarga de procesar el siguiente ticket en la lista de prioridades.
+Recibe como argumento las listas de alta, media y baja prioridad, y la lista de usuarios. La función verifica cuál es el siguiente ticket a atender (alta, media o baja) y lo procesa, imprimiendo su información y eliminándolo de la lista de usuarios.
+*/
+
 void procesar_siguiente_ticket(List *alta, List *media, List *baja, List *Usuarios) {
     Usuario *user = NULL;
-    const char *prioridad = "";
+    const char *prioridad = "";// inicializo la variable prioridad como una cadena vacía.
 
     if (list_size(alta) > 0) {
         user = list_popFront(alta);
@@ -383,19 +434,22 @@ void procesar_siguiente_ticket(List *alta, List *media, List *baja, List *Usuari
     } else if (list_size(baja) > 0) {
         user = list_popFront(baja);
         prioridad = "Baja";
-    }
+    }// aqui verifico si hay tickets en la lista de alta, media o baja prioridad, y si hay, elimino el primer ticket de la lista correspondiente y lo guardo en la variable user.
 
     if (user == NULL) {
         printf("No hay tickets pendientes.\n");
-        return;
+        return;// si no hay tickets pendientes, salgo de la funcion.
     }
 
     printf("Atendiendo ticket (%s prioridad):\n", prioridad);
-    imprimir_ticket(user, prioridad);
-    eliminar_usuario_por_id(Usuarios, user->id);
+    imprimir_ticket(user, prioridad);// imprimo el ticket del usuario que estoy atendiendo.
+    eliminar_usuario_por_id(Usuarios, user->id);//Luego elimino el usuario ya antendido de la lista de usuarios.
     free(user);
 }
 
+/*
+La siguiente funcion se encargara de mostrarme lo que sera mi menu principal , la parte visual de la app.
+*/
 void mostrarMenuPrincipal() {
     limpiarPantalla();
     puts("========================================");
@@ -410,6 +464,10 @@ void mostrarMenuPrincipal() {
     puts("6) Salir");
 }
 
+/*
+La siguiente funcion se encargara de mostrarme lo que sera mi menu de pruebas, la parte visual de la app que solo me funcionara para el testeo de la app, con valores aleatorios.
+*/
+
 void mostrarMenuPruebas() {
     limpiarPantalla();
     puts("========================================");
@@ -420,15 +478,23 @@ void mostrarMenuPruebas() {
     puts("3) Volver al menú principal");
 }
 
+/*
+La siguiente funcion se encargara de leer uan opcion del menu, para poder direccionar al usuario y darle las distintas opciones que tiene para navegar por la interfaz de la app.
+Recibe como argumento un mensaje que se mostrará al usuario. La función lee la opción ingresada y la devuelve.
+*/
+
 char leerOpcion(const char *mensaje) {
     char opcion;
-    printf("%s", mensaje);
-    opcion = getchar(); // Lee un solo carácter
-    // Limpiar el búfer de entrada
-    while (getchar() != '\n'); 
+    printf("%s", mensaje);// le pido al usuario que ingrese una opcion.
+    opcion = getchar(); 
+    while (getchar() != '\n');// limpio el buffer de entrada para evitar problemas con entradas no deseadas.
     return opcion;
 }
 
+/*
+La siguiente funcion sera la declaracion de la funcion main, donde se inicializan las listas y se ejecuta el programa.
+La función principal crea las listas de usuarios y prioridades, inicializa el generador de números aleatorios y muestra el menú principal. Luego, procesa las opciones seleccionadas por el usuario hasta que se elige salir del programa.      
+*/
 int main() {
     List *Usuarios = list_create();
     List *alta = list_create();
@@ -509,12 +575,12 @@ int main() {
                 puts("Opción no válida. Por favor, intente de nuevo.");
         }
         if (opcion != '0') presioneTeclaParaContinuar();
-    } while (opcion != '6');
+    } while (opcion != '6');// Se trabaja con la variable opcion para que el usuario pueda elegir entre las distintas opciones del menu principal. son 6 casos principales, que permitiran al usuario navegar por la app, teniendo varias acciones para realizar.
 
     Usuario *actual = list_first(Usuarios);
     while (actual != NULL) {
         free(actual);
-        actual = list_next(Usuarios);
+        actual = list_next(Usuarios);//Este while recorre la lista principal Usuarios y libera uno por uno los structs de tipo Usuario que fueron reservados dinámicamente con malloc o similar.
     }
     list_clean(Usuarios);
     list_clean(alta);
@@ -525,5 +591,7 @@ int main() {
     free(media);
     free(baja);
 
-    return 0;
+    // Libero la memoria de las listas y de los usuarios para evitar fugas de memoria, algo sumamente importante para el correcto funcionamiento de la app.
+
+    return 0;//aqui todo culmina y se retorna 0, indicando que el programa se ejecuto correctamente..
 }
