@@ -142,6 +142,9 @@ Opción seleccionada: 0) [Modo Pruebas]
   - **Opción 1:** Registra un usuario aleatorio con datos generados automáticamente y lo agrega con prioridad baja por defecto.
   - **Opción 2:** Asigna prioridades aleatorias a todos los usuarios registrados en la lista general, y los distribuye en las listas de prioridad alta, media y baja.
   - **Opción 3:** Permite volver al menú principal.
+ 
+Observación: El codigo a lo largo de su implementación cuenta  con algunos comentarios que serviran para que cualquier persona que desee posiblemente intentar entender su codigo base pueda comprender el mismo, se busco hacer uso de nombre de funciones amigables para que este codigo sea accesible a todo aquel que se interese por entener su estructura. 
+
 
 - Ideal para realizar pruebas rápidas del sistema y validar el correcto funcionamiento de las funciones de registro, prioridad y organización sin depender del ingreso manual de información.
 
